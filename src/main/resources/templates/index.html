@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Armamento | Inicio</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}">Armamento</a>
+    <span>Administración de inventario</span>
+</header>
+<main class="container">
+    <section class="hero">
+        <p class="eyebrow">Panel de administración</p>
+        <h1>Gestión de armamento</h1>
+        <p>Consulta y administra la información del sistema.</p>
+    </section>
+    <section>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Módulos</p>
+                <h2>Datos del sistema</h2>
+            </div>
+        </div>
+        <nav class="resource-grid" aria-label="Módulos disponibles">
+            <a class="resource-card" th:each="resource : ${resources}"
+               th:href="@{/mvc/{name}(name=${resource})}">
+                <span class="resource-card__name" th:text="${#strings.capitalize(#strings.replace(resource, '-', ' '))}">Recurso</span>
+                <span class="resource-card__action">Abrir módulo <span aria-hidden="true">→</span></span>
+            </a>
+        </nav>
+    </section>
+</main>
+</body>
+</html>

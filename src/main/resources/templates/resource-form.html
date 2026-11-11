@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${editing ? 'Editar ' : 'Nuevo '} + ${title} + ' | Armamento'">Armamento</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}">Armamento</a>
+    <a class="topbar__link" th:href="@{/mvc/{resource}(resource=${resource})}">Volver al listado</a>
+</header>
+<main class="container container--narrow">
+    <nav class="breadcrumbs" aria-label="Ruta de navegación">
+        <a th:href="@{/}">Inicio</a><span aria-hidden="true">/</span>
+        <a th:href="@{/mvc/{resource}(resource=${resource})}" th:text="${title}">Módulo</a>
+        <span aria-hidden="true">/</span><span th:text="${editing ? 'Editar' : 'Nuevo'}">Nuevo</span>
+    </nav>
+    <section class="section-heading">
+        <div>
+            <p class="eyebrow" th:text="${editing ? 'Actualizar información' : 'Agregar información'}">Formulario</p>
+            <h1 th:text="${editing ? 'Editar ' + title : 'Nuevo registro de ' + title}">Formulario</h1>
+        </div>
+    </section>
+    <p class="notice notice--error" th:if="${error}" th:text="${error}" role="alert"></p>
+    <form class="panel form-grid" th:action="${action}" method="post">
+        <div class="field" th:each="field : ${fields}"
+             th:if="${!(field.generated and !editing)}">
+            <label th:for="${field.name}" th:text="${field.label}">Campo</label>
+
+            <select th:if="${field.inputType == 'boolean'}" th:id="${field.name}" th:name="${field.name}">
+                <option value="" th:selected="${values[field.name] == null or values[field.name] == ''}">Sin especificar</option>
+                <option value="true" th:selected="${values[field.name] == 'true'}">Sí</option>
+                <option value="false" th:selected="${values[field.name] == 'false'}">No</option>
+            </select>
+
+            <textarea th:if="${field.inputType == 'textarea'}"
+                      th:id="${field.name}" th:name="${field.name}"
+                      th:readonly="${field.primaryKey and editing}"
+                      th:required="${field.required and !editing}"
+                      th:text="${values[field.name]}"></textarea>
+
+            <input th:if="${field.inputType != 'boolean' and field.inputType != 'textarea'}"
+                   th:id="${field.name}" th:name="${field.name}"
+                   th:type="${field.inputType == 'number-decimal' ? 'number' : field.inputType}"
+                   th:step="${field.inputType == 'number-decimal' ? 'any' : null}"
+                   th:value="${values[field.name]}"
+                   th:readonly="${field.primaryKey and editing}"
+                   th:required="${field.required and !editing}"
+                   th:placeholder="${field.secret and editing ? 'Dejar vacío para conservar el valor actual' : ''}">
+        </div>
+
+        <p class="form-hint" th:if="${resource == 'usuarios'}">
+            El campo de contraseña recibe un hash ya generado; este prototipo no cifra contraseñas.
+            Al editar, dejarlo vacío conserva el valor actual.
+        </p>
+        <div class="form-actions">
+            <a class="button button--secondary" th:href="@{/mvc/{resource}(resource=${resource})}">Cancelar</a>
+            <button class="button button--primary" type="submit"
+                    th:text="${editing ? 'Guardar cambios' : 'Crear registro'}">Guardar</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

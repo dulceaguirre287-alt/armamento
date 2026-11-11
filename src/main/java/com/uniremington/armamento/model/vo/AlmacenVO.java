@@ -1,4 +1,4 @@
-package com.uniremington.armamento.vo;
+package com.uniremington.armamento.model.vo;
 
 public record AlmacenVO(
         Integer idAlmacen, String nombre, String direccion, String ciudad,

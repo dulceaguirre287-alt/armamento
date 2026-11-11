@@ -1,4 +1,4 @@
-package com.uniremington.armamento.vo;
+package com.uniremington.armamento.model.vo;
 
 import java.time.LocalDateTime;
 

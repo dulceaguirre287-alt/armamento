@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Armamento | ' + ${title}">Armamento</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}">Armamento</a>
+    <a class="topbar__link" th:href="@{/}">Inicio</a>
+</header>
+<main class="container">
+    <nav class="breadcrumbs" aria-label="Ruta de navegación">
+        <a th:href="@{/}">Inicio</a><span aria-hidden="true">/</span><span th:text="${title}">Módulo</span>
+    </nav>
+    <section class="section-heading">
+        <div>
+            <p class="eyebrow">Administración</p>
+            <h1 th:text="${title}">Módulo</h1>
+            <p class="muted" th:text="${rows.size()} + ' registros'">0 registros</p>
+        </div>
+        <a class="button button--primary" th:href="@{/mvc/{resource}/nuevo(resource=${resource})}">Nuevo registro</a>
+    </section>
+
+    <p class="notice notice--success" th:if="${success}" th:text="${success}" role="status"></p>
+    <p class="notice notice--error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <section class="panel" aria-label="Listado">
+        <div class="table-wrap" th:if="${!rows.isEmpty()}">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col" th:each="field : ${fields}" th:text="${field.label}">Campo</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${rows}">
+                    <td th:each="field : ${fields}" th:text="${row[field.name]}">Valor</td>
+                    <td class="actions">
+                        <a class="button button--small button--secondary"
+                           th:href="@{/mvc/{resource}/{id}/editar(resource=${resource},id=${row['id']})}">Editar</a>
+                        <form th:action="@{/mvc/{resource}/{id}/eliminar(resource=${resource},id=${row['id']})}"
+                              method="post" onsubmit="return confirm('¿Eliminar este registro?');">
+                            <button class="button button--small button--danger" type="submit">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty-state" th:if="${rows.isEmpty()}">
+            <h2>Aún no hay registros</h2>
+            <p>Agrega el primer registro para comenzar.</p>
+            <a class="button button--primary" th:href="@{/mvc/{resource}/nuevo(resource=${resource})}">Crear registro</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

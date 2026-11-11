@@ -1,4 +1,4 @@
-package com.uniremington.armamento.vo;
+package com.uniremington.armamento.model.vo;
 
 public record CategoriaVO(
         Integer idCategoria, String nombre, String tipoControl, Boolean requierePermiso,
