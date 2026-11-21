@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.uniremington.armamento.model.dao.AlmacenDao;
@@ -54,10 +55,11 @@ import com.uniremington.armamento.model.vo.RolVO;
 import com.uniremington.armamento.model.vo.UnidadSeriadaVO;
 import com.uniremington.armamento.model.vo.UsuarioVO;
 import com.uniremington.armamento.model.vo.VentaVO;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.uniremington.armamento.service.AuditoriaService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -69,15 +71,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api")
 public class ResController {
+    private static final Set<String> SERVICE_MANAGED_RESOURCES = Set.of(
+            "compras", "detalles-compra", "detalles-devolucion", "detalles-venta",
+            "devoluciones", "existencias", "movimientos-inventario", "unidades-seriadas", "ventas");
+
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final AuditoriaService auditoriaService;
     private final Map<String, ResourceHandler> resources;
 
     public ResController(
             ObjectMapper objectMapper,
+            PasswordEncoder passwordEncoder,
+            AuditoriaService auditoriaService,
             AlmacenDao almacenDao,
             AuditoriaDao auditoriaDao,
             CategoriaDao categoriaDao,
@@ -99,6 +111,8 @@ public class ResController {
             UsuarioDao usuarioDao,
             VentaDao ventaDao) {
         this.objectMapper = objectMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.auditoriaService = auditoriaService;
         Map<String, ResourceHandler> endpoints = new LinkedHashMap<>();
         endpoints.put("almacenes", endpoint(almacenDao, AlmacenVO.class,
                 key("idAlmacen", Integer.class, AlmacenVO::idAlmacen)));
@@ -157,28 +171,51 @@ public class ResController {
     }
 
     @PostMapping("/{resource}")
+    @Transactional
     public ResponseEntity<Object> create(
             @PathVariable String resource,
             @RequestBody JsonNode body) {
-        CreatedResource created = endpointFor(resource).create(body);
+        ResourceHandler endpoint = endpointFor(resource);
+        requireServiceManagedWrite(resource);
+        CreatedResource created = endpoint.create(body);
+        auditoriaService.registrar("CREAR", resource, created.id(), null, created.value());
         URI location = URI.create("/api/" + resource + "/" + created.id());
         return ResponseEntity.created(location).body(created.value());
     }
 
     @PutMapping("/{resource}/{id}")
+    @Transactional
     public ResponseEntity<Object> update(
             @PathVariable String resource,
             @PathVariable String id,
             @RequestBody JsonNode body) {
-        Optional<Object> updated = endpointFor(resource).update(id, body);
+        ResourceHandler endpoint = endpointFor(resource);
+        requireServiceManagedWrite(resource);
+        Optional<JsonNode> antes = endpoint.findById(id);
+        Optional<Object> updated = endpoint.update(id, body);
+        updated.ifPresent(valor -> auditoriaService.registrar(
+                "ACTUALIZAR", resource, id, antes.orElse(null), valor));
         return updated.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{resource}/{id}")
+    @Transactional
     public ResponseEntity<Void> delete(@PathVariable String resource, @PathVariable String id) {
-        return endpointFor(resource).delete(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        ResourceHandler endpoint = endpointFor(resource);
+        requireServiceManagedWrite(resource);
+        Optional<JsonNode> antes = endpoint.findById(id);
+        if (endpoint.delete(id)) {
+            auditoriaService.registrar("ELIMINAR", resource, id, antes.orElse(null), null);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    private void requireServiceManagedWrite(String resource) {
+        if (SERVICE_MANAGED_RESOURCES.contains(resource)) {
+            throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED,
+                    "Usa los servicios de negocio para modificar este recurso.");
+        }
     }
 
     public List<String> resourceNames() {
@@ -254,7 +291,7 @@ public class ResController {
             JdbcRecordDao<T> dao,
             Class<T> recordType,
             KeyPart<T>... keyParts) {
-        return new RecordResource<>(dao, recordType, objectMapper, List.of(keyParts));
+        return new RecordResource<>(dao, recordType, objectMapper, passwordEncoder, List.of(keyParts));
     }
 
     private static <T, K> KeyPart<T> key(String name, Class<K> type, Function<T, K> accessor) {
@@ -298,16 +335,19 @@ public class ResController {
         private final JdbcRecordDao<T> dao;
         private final Class<T> recordType;
         private final ObjectMapper objectMapper;
+        private final PasswordEncoder passwordEncoder;
         private final List<KeyPart<T>> keyParts;
 
         private RecordResource(
                 JdbcRecordDao<T> dao,
                 Class<T> recordType,
                 ObjectMapper objectMapper,
+                PasswordEncoder passwordEncoder,
                 List<KeyPart<T>> keyParts) {
             this.dao = dao;
             this.recordType = recordType;
             this.objectMapper = objectMapper;
+            this.passwordEncoder = passwordEncoder;
             this.keyParts = keyParts;
         }
 
@@ -420,12 +460,19 @@ public class ResController {
 
         private T readRecord(JsonNode body) {
             try {
-                T record = objectMapper.treeToValue(body, recordType);
+                JsonNode request = body;
+                if (recordType == UsuarioVO.class && body.hasNonNull("passwordHash")
+                        && !body.path("passwordHash").asText().isBlank()) {
+                    ObjectNode sanitized = body.deepCopy();
+                    sanitized.put("passwordHash", passwordEncoder.encode(body.path("passwordHash").asText()));
+                    request = sanitized;
+                }
+                T record = objectMapper.treeToValue(request, recordType);
                 if (record == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo no puede ser null");
                 }
                 return record;
-            } catch (JacksonException exception) {
+            } catch (JsonProcessingException exception) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo no coincide con el VO", exception);
             }
         }
@@ -447,7 +494,7 @@ public class ResController {
             }
             try {
                 return objectMapper.treeToValue(merged, recordType);
-            } catch (JacksonException exception) {
+            } catch (JsonProcessingException exception) {
                 throw new IllegalStateException("Could not preserve existing password hash", exception);
             }
         }

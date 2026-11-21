@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Detalle de producto', 'productos', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Catálogo</p><h1 th:text="${producto.nombre}">Producto</h1>
+            <p class="page-heading__subtitle" th:text="${producto.sku}">SKU</p></div>
+            <div class="table-actions"><a class="btn btn--secondary" th:href="@{/productos}">Volver</a>
+                <a class="btn btn--primary" sec:authorize="hasAnyRole('ADMINISTRADOR','ALMACENISTA')" th:href="@{/productos/{id}/editar(id=${producto.id})}">Editar</a></div>
+        </header>
+        <section class="panel detail-grid">
+            <div class="detail-item"><span class="detail-item__label">Categoría</span><span class="detail-item__value" th:text="${producto.categoriaNombre}">-</span></div>
+            <div class="detail-item"><span class="detail-item__label">Marca</span><span class="detail-item__value" th:text="${producto.marcaNombre ?: 'Sin marca'}">-</span></div>
+            <div class="detail-item"><span class="detail-item__label">Modelo</span><span class="detail-item__value" th:text="${producto.modelo ?: '—'}">—</span></div>
+            <div class="detail-item"><span class="detail-item__label">Calibre</span><span class="detail-item__value" th:text="${producto.calibre ?: '—'}">—</span></div>
+            <div class="detail-item"><span class="detail-item__label">Precio de compra</span><span class="detail-item__value" th:text="'$ ' + ${#numbers.formatDecimal(producto.precioCompraRef, 1, 'POINT', 2, 'COMMA')}">$ 0,00</span></div>
+            <div class="detail-item"><span class="detail-item__label">Precio de venta</span><span class="detail-item__value" th:text="'$ ' + ${#numbers.formatDecimal(producto.precioVenta, 1, 'POINT', 2, 'COMMA')}">$ 0,00</span></div>
+            <div class="detail-item"><span class="detail-item__label">IVA</span><span class="detail-item__value" th:text="${producto.porcentajeIva} + '%'">0%</span></div>
+            <div class="detail-item"><span class="detail-item__label">Unidad</span><span class="detail-item__value" th:text="${producto.unidadMedida}">unidad</span></div>
+            <div class="detail-item"><span class="detail-item__label">Stock mínimo</span><span class="detail-item__value" th:text="${producto.stockMinimo}">0</span></div>
+            <div class="detail-item"><span class="detail-item__label">Estado</span><span class="badge" th:classappend="${producto.activo} ? ' badge--success' : ' badge--danger'" th:text="${producto.activo} ? 'Activo' : 'Inactivo'">Activo</span></div>
+            <div class="detail-item field--wide"><span class="detail-item__label">Descripción</span><span class="detail-item__value" th:text="${producto.descripcion ?: 'Sin descripción'}">—</span></div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

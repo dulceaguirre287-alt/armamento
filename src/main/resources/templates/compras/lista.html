@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Compras', 'compras', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Abastecimiento</p><h1>Compras</h1>
+            <p class="page-heading__subtitle" th:text="${compras.totalElements} + ' órdenes registradas'">Compras</p></div>
+            <a class="btn btn--primary" sec:authorize="hasAnyRole('ADMINISTRADOR','ALMACENISTA')" th:href="@{/compras/nueva}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar compra</a></header>
+        <section class="panel panel--flush">
+            <div class="toolbar"><form class="search-form" method="get" th:action="@{/compras}" role="search">
+                <label class="sr-only" for="compra-search">Buscar compra</label><input id="compra-search" name="q" type="search" th:value="${q}" placeholder="Buscar por número de compra">
+                <button class="btn btn--secondary" type="submit">Buscar</button></form></div>
+            <div class="table-wrap" th:if="${compras.hasContent()}"><table class="data-table">
+                <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Almacén</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+                <tbody><tr th:each="compra : ${compras.content}">
+                    <td><a th:href="@{/compras/{id}(id=${compra.id})}" th:text="${compra.numeroCompra}">Compra</a></td>
+                    <td th:text="${#temporals.format(compra.fechaCompra, 'dd/MM/yyyy')}">Fecha</td><td th:text="${compra.proveedorNombre}">Proveedor</td>
+                    <td th:text="${compra.almacenNombre}">Almacén</td>
+                    <td th:text="'$ ' + ${#numbers.formatDecimal(compra.total, 1, 'POINT', 2, 'COMMA')}">$ 0,00</td>
+                    <td><span class="badge" th:classappend="${compra.estado == 'ANULADA'} ? ' badge--danger' : ' badge--success'" th:text="${compra.estado}">Estado</span></td>
+                    <td><a class="btn btn--small btn--secondary" th:href="@{/compras/{id}(id=${compra.id})}">Ver detalle</a></td>
+                </tr></tbody></table></div>
+            <div class="empty-state" th:unless="${compras.hasContent()}"><i class="fa-solid fa-cart-flatbed" aria-hidden="true"></i>
+                <h2>Sin compras registradas</h2><p>Registra la primera compra para actualizar las existencias.</p></div>
+            <div th:replace="~{fragments/pagination :: pagination(${compras}, '/compras', ${q})}"></div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

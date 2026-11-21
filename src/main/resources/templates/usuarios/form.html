@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell(${titulo}, 'usuarios', ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Seguridad y control</p><h1 th:text="${titulo}">Usuario</h1>
+            <p class="page-heading__subtitle">Asigna el rol mínimo necesario para las funciones del usuario.</p></div></header>
+        <form class="panel" th:object="${usuario}" th:action="${usuario.id == null ? '/usuarios' : '/usuarios/' + usuario.id}" method="post">
+            <div class="alert alert--error" th:if="${#fields.hasGlobalErrors()}" role="alert"><span th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</span></div>
+            <div class="field-grid">
+                <div class="field"><label for="nombres">Nombres</label><input id="nombres" th:field="*{nombres}" required maxlength="120"><span class="field__error" th:errors="*{nombres}"></span></div>
+                <div class="field"><label for="apellidos">Apellidos</label><input id="apellidos" th:field="*{apellidos}" required maxlength="120"><span class="field__error" th:errors="*{apellidos}"></span></div>
+                <div class="field"><label for="email">Correo</label><input id="email" type="email" autocomplete="email" th:field="*{email}" required maxlength="190"><span class="field__error" th:errors="*{email}"></span></div>
+                <div class="field"><label for="username">Nombre de usuario</label><input id="username" th:field="*{username}" autocomplete="username" required maxlength="80"><span class="field__error" th:errors="*{username}"></span></div>
+                <div class="field"><label for="rolId">Rol</label><select id="rolId" th:field="*{rolId}" required>
+                    <option value="">Selecciona rol</option><option th:each="rol : ${roles}" th:value="${rol.id}" th:text="${rol.nombre}">Rol</option>
+                </select><span class="field__error" th:errors="*{rolId}"></span></div>
+                <div class="field"><label for="password" th:text="${usuario.id == null ? 'Contraseña inicial' : 'Nueva contraseña (opcional)'}">Contraseña</label>
+                    <input id="password" type="password" th:field="*{password}" autocomplete="new-password" minlength="12" maxlength="100"
+                           th:required="${usuario.id == null}" th:placeholder="${usuario.id == null ? 'Mínimo 12 caracteres' : 'Dejar vacío para conservarla'}">
+                    <span class="field__error" th:errors="*{password}"></span>
+                    <span class="form-hint">La contraseña se almacena con BCrypt; no compartas credenciales.</span></div>
+                <label class="check-field"><input type="checkbox" th:field="*{activo}"> Cuenta activa</label>
+            </div>
+            <div class="form-actions"><a class="btn btn--secondary" th:href="@{/usuarios}">Cancelar</a><button class="btn btn--primary" type="submit">Guardar usuario</button></div>
+        </form>
+    </section>
+</th:block>
+</body>
+</html>

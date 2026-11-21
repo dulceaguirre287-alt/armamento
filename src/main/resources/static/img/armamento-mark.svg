@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Gestión de armamento">
+  <rect width="64" height="64" rx="16" fill="#0B5D4B"/>
+  <path d="M17 18h30v7H17zm4 11h22v18H21zm6 5v8h10v-8z" fill="#fff"/>
+  <path d="M28 12h8v6h-8z" fill="#F59E0B"/>
+</svg>

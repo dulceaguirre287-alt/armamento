@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Devoluciones', 'devoluciones', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Comercial</p><h1>Devoluciones</h1>
+            <p class="page-heading__subtitle" th:text="${devoluciones.totalElements} + ' solicitudes registradas'">Devoluciones</p></div>
+            <a class="btn btn--primary" sec:authorize="hasAnyRole('ADMINISTRADOR','ALMACENISTA')" th:href="@{/devoluciones/nueva}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar devolución</a></header>
+        <section class="panel panel--flush">
+            <div class="toolbar"><form class="search-form" method="get" th:action="@{/devoluciones}" role="search">
+                <label class="sr-only" for="devolucion-search">Buscar devolución</label><input id="devolucion-search" name="q" type="search" th:value="${q}" placeholder="Buscar por número de devolución">
+                <button class="btn btn--secondary" type="submit">Buscar</button></form></div>
+            <div class="table-wrap" th:if="${devoluciones.hasContent()}"><table class="data-table">
+                <thead><tr><th>Número</th><th>Fecha</th><th>Tipo</th><th>Transacción</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
+                <tbody><tr th:each="devolucion : ${devoluciones.content}">
+                    <td><a th:href="@{/devoluciones/{id}(id=${devolucion.id})}" th:text="${devolucion.numeroDevolucion}">DEV</a></td>
+                    <td th:text="${#temporals.format(devolucion.fechaDevolucion, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                    <td th:text="${devolucion.tipo}">Tipo</td><td th:text="${devolucion.tipo == 'VENTA' ? devolucion.ventaNumero : devolucion.compraNumero}">Origen</td>
+                    <td th:text="${devolucion.motivo}">Motivo</td>
+                    <td><span class="badge" th:classappend="${devolucion.estado == 'APROBADA'} ? ' badge--success' : (${devolucion.estado == 'RECHAZADA'} ? ' badge--danger' : ' badge--warning')"
+                              th:text="${devolucion.estado}">Estado</span></td>
+                    <td><a class="btn btn--small btn--secondary" th:href="@{/devoluciones/{id}(id=${devolucion.id})}">Revisar</a></td>
+                </tr></tbody></table></div>
+            <div class="empty-state" th:unless="${devoluciones.hasContent()}"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
+                <h2>Sin devoluciones</h2><p>Las solicitudes aparecerán aquí.</p></div>
+            <div th:replace="~{fragments/pagination :: pagination(${devoluciones}, '/devoluciones', ${q})}"></div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

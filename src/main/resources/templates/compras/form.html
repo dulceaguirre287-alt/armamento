@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Nueva compra', 'compras', ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Abastecimiento</p><h1>Nueva compra</h1>
+            <p class="page-heading__subtitle">La recepción actualizará las existencias del almacén.</p></div></header>
+        <form class="panel" th:object="${compra}" th:action="@{/compras}" method="post" data-totals-form>
+            <div class="alert alert--error" th:if="${#fields.hasGlobalErrors()}" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</span></div>
+            <div class="field-grid">
+                <div class="field"><label for="proveedorId">Proveedor</label><select id="proveedorId" th:field="*{proveedorId}" required>
+                    <option value="">Selecciona proveedor</option><option th:each="proveedor : ${proveedores}" th:value="${proveedor.id}" th:text="${proveedor.razonSocial}">Proveedor</option>
+                </select><span class="field__error" th:errors="*{proveedorId}"></span></div>
+                <div class="field"><label for="almacenId">Almacén de recepción</label><select id="almacenId" th:field="*{almacenId}" required>
+                    <option value="">Selecciona almacén</option><option th:each="almacen : ${almacenes}" th:value="${almacen.id}" th:text="${almacen.nombre}">Almacén</option>
+                </select><span class="field__error" th:errors="*{almacenId}"></span></div>
+                <div class="field"><label for="numeroFacturaProveedor">Factura del proveedor</label><input id="numeroFacturaProveedor" th:field="*{numeroFacturaProveedor}" maxlength="80"></div>
+                <div class="field"><label for="guiaTransporte">Guía de transporte</label><input id="guiaTransporte" th:field="*{guiaTransporte}" maxlength="80"></div>
+                <div class="field field--wide"><label for="observaciones">Observaciones</label><textarea id="observaciones" th:field="*{observaciones}" maxlength="1000"></textarea></div>
+            </div>
+            <div class="section-subheading"><div><h2>Productos recibidos</h2>
+                <p class="muted">Para productos seriados, registra una unidad por línea con cantidad 1 e ingresa su número de serie.</p></div>
+                <button class="btn btn--secondary" type="button" data-add-line>Agregar producto</button></div>
+            <div class="line-items" data-lines>
+                <div class="line-item line-item--purchase" data-line-item th:each="detalle, stat : *{detalles}">
+                    <div class="field line-item__product"><label th:for="${'compra-producto-' + stat.index}">Producto</label>
+                        <select th:id="${'compra-producto-' + stat.index}" th:field="*{detalles[__${stat.index}__].productoId}" data-line-product="purchase" required>
+                            <option value="" data-price="0" data-tax="0">Selecciona producto</option>
+                            <option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.sku + ' · ' + producto.nombre}"
+                                    th:attr="data-price=${producto.precioCompraRef},data-tax=${producto.porcentajeIva}">Producto</option>
+                        </select><span class="field__error" th:errors="*{detalles[__${stat.index}__].productoId}"></span></div>
+                    <div class="field"><label th:for="${'compra-cantidad-' + stat.index}">Cantidad</label>
+                        <input th:id="${'compra-cantidad-' + stat.index}" type="number" min="1" data-line-quantity th:field="*{detalles[__${stat.index}__].cantidad}" required>
+                        <span class="field__error" th:errors="*{detalles[__${stat.index}__].cantidad}"></span></div>
+                    <div class="field"><label th:for="${'compra-precio-' + stat.index}">Precio unitario</label>
+                        <input th:id="${'compra-precio-' + stat.index}" type="number" min="0.01" step="0.01" data-line-price th:field="*{detalles[__${stat.index}__].precioUnitario}" required>
+                        <span class="field__error" th:errors="*{detalles[__${stat.index}__].precioUnitario}"></span></div>
+                    <div class="field"><label th:for="${'compra-lote-' + stat.index}">Lote</label><input th:id="${'compra-lote-' + stat.index}" maxlength="80" th:field="*{detalles[__${stat.index}__].lote}"></div>
+                    <div class="field"><label th:for="${'compra-vencimiento-' + stat.index}">Vencimiento</label><input th:id="${'compra-vencimiento-' + stat.index}" type="date" th:field="*{detalles[__${stat.index}__].fechaVencimiento}"></div>
+                    <div class="field"><label th:for="${'compra-serie-' + stat.index}">N.º de serie (si aplica)</label>
+                        <input th:id="${'compra-serie-' + stat.index}" th:name="|detalles[${stat.index}].numerosSerie[0]|"
+                               th:value="${detalle.numerosSerie.isEmpty() ? '' : detalle.numerosSerie[0]}" maxlength="100"></div>
+                    <input type="hidden" data-line-tax value="0">
+                    <button class="btn btn--small btn--danger" type="button" data-remove-line aria-label="Quitar producto">Quitar</button>
+                </div>
+            </div>
+            <template data-line-template><div class="line-item line-item--purchase" data-line-item>
+                <div class="field line-item__product"><label>Producto</label><select data-name="detalles[__index__].productoId" data-line-product="purchase" required>
+                    <option value="" data-price="0" data-tax="0">Selecciona producto</option>
+                    <option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.sku + ' · ' + producto.nombre}"
+                            th:attr="data-price=${producto.precioCompraRef},data-tax=${producto.porcentajeIva}">Producto</option></select></div>
+                <div class="field"><label>Cantidad</label><input type="number" min="1" value="1" data-name="detalles[__index__].cantidad" data-line-quantity required></div>
+                <div class="field"><label>Precio unitario</label><input type="number" min="0.01" step="0.01" data-name="detalles[__index__].precioUnitario" data-line-price required></div>
+                <div class="field"><label>Lote</label><input maxlength="80" data-name="detalles[__index__].lote"></div>
+                <div class="field"><label>Vencimiento</label><input type="date" data-name="detalles[__index__].fechaVencimiento"></div>
+                <div class="field"><label>N.º de serie (si aplica)</label><input data-name="detalles[__index__].numerosSerie[0]" maxlength="100"></div>
+                <input type="hidden" data-line-tax value="0"><button class="btn btn--small btn--danger" type="button" data-remove-line>Quitar</button>
+            </div></template>
+            <span class="field__error" th:errors="*{detalles}"></span>
+            <div class="totals" aria-live="polite">
+                <div class="totals__row"><span>Subtotal estimado</span><strong data-total-subtotal>$ 0</strong></div>
+                <div class="totals__row"><span>IVA estimado</span><strong data-total-tax>$ 0</strong></div>
+                <div class="totals__row totals__row--grand"><span>Total estimado</span><strong data-total-grand>$ 0</strong></div>
+            </div>
+            <div class="form-actions"><a class="btn btn--secondary" th:href="@{/compras}">Cancelar</a>
+                <button class="btn btn--primary" type="submit">Registrar recepción</button></div>
+        </form>
+        <script th:src="@{/js/totales.js}" defer></script>
+    </section>
+</th:block>
+</body>
+</html>

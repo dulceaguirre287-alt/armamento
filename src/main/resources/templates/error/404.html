@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('No encontrado', 'inicio', ~{::content})}">
+    <section class="empty-state" th:fragment="content">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><p class="eyebrow">Error 404</p>
+        <h1>Registro no encontrado</h1><p th:text="${mensaje ?: 'El recurso solicitado no existe.'}">No se encontró.</p>
+        <a class="btn btn--primary" th:href="@{/}">Volver al inicio</a>
+    </section>
+</th:block>
+</body>
+</html>

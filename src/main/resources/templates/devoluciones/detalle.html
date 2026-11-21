@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Detalle de devolución', 'devoluciones', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Comercial</p><h1 th:text="${devolucion.numeroDevolucion}">Devolución</h1>
+            <p class="page-heading__subtitle" th:text="${#temporals.format(devolucion.fechaDevolucion, 'dd/MM/yyyy HH:mm')}">Fecha</p></div>
+            <a class="btn btn--secondary" th:href="@{/devoluciones}">Volver a devoluciones</a></header>
+        <section class="panel detail-grid">
+            <div class="detail-item"><span class="detail-item__label">Tipo</span><span class="detail-item__value" th:text="${devolucion.tipo}">Tipo</span></div>
+            <div class="detail-item"><span class="detail-item__label">Transacción de origen</span><span class="detail-item__value" th:text="${devolucion.tipo == 'VENTA' ? devolucion.ventaNumero : devolucion.compraNumero}">Origen</span></div>
+            <div class="detail-item"><span class="detail-item__label">Almacén</span><span class="detail-item__value" th:text="${devolucion.almacenNombre}">Almacén</span></div>
+            <div class="detail-item"><span class="detail-item__label">Solicitante</span><span class="detail-item__value" th:text="${devolucion.usuarioNombre}">Usuario</span></div>
+            <div class="detail-item"><span class="detail-item__label">Estado</span><span class="badge" th:classappend="${devolucion.estado == 'APROBADA'} ? ' badge--success' : (${devolucion.estado == 'RECHAZADA'} ? ' badge--danger' : ' badge--warning')" th:text="${devolucion.estado}">Estado</span></div>
+            <div class="detail-item"><span class="detail-item__label">Motivo</span><span class="detail-item__value" th:text="${devolucion.motivo}">Motivo</span></div>
+            <div class="detail-item field--wide"><span class="detail-item__label">Descripción</span><span class="detail-item__value" th:text="${devolucion.descripcion ?: '—'}">—</span></div>
+        </section>
+        <section class="panel panel--flush section-spaced"><h2 class="panel-title">Productos</h2>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>SKU</th><th>Producto</th><th>Cantidad</th><th>Serie</th><th>Lote</th><th>Condición</th><th>Reingresa</th></tr></thead>
+                <tbody><tr th:each="detalle : ${devolucion.detalles}"><td th:text="${detalle.productoSku}">SKU</td><td th:text="${detalle.productoNombre}">Producto</td>
+                    <td th:text="${detalle.cantidad}">1</td><td th:text="${detalle.numeroSerie ?: '—'}">—</td><td th:text="${detalle.lote ?: '—'}">—</td>
+                    <td th:text="${detalle.condicion}">Condición</td><td th:text="${detalle.reingresaStock ? 'Sí' : 'No'}">Sí</td></tr></tbody></table></div>
+            <div class="totals"><div class="totals__row totals__row--grand"><span>Total reembolso</span><strong th:text="'$ ' + ${#numbers.formatDecimal(devolucion.totalReembolso, 1, 'POINT', 2, 'COMMA')}">$ 0</strong></div></div>
+        </section>
+        <div class="table-actions section-spaced" th:if="${devolucion.estado == 'PENDIENTE'}" sec:authorize="hasAnyRole('ADMINISTRADOR','ALMACENISTA')">
+            <form th:action="@{/devoluciones/{id}/aprobar(id=${devolucion.id})}" method="post" data-confirm="¿Aprobar esta devolución y actualizar las existencias?">
+                <button class="btn btn--primary" type="submit">Aprobar devolución</button></form>
+            <form th:action="@{/devoluciones/{id}/rechazar(id=${devolucion.id})}" method="post" data-confirm="¿Rechazar esta devolución?">
+                <button class="btn btn--danger" type="submit">Rechazar devolución</button></form>
+        </div>
+    </section>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="navbar" th:fragment="navbar">
+    <div class="navbar__start">
+        <button class="btn btn--ghost" type="button" data-sidebar-toggle aria-label="Alternar menú lateral">
+            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <span class="navbar__user">Panel administrativo</span>
+    </div>
+    <div class="navbar__end">
+        <span class="navbar__user" sec:authentication="name">usuario</span>
+        <form th:action="@{/logout}" method="post">
+            <button class="btn btn--secondary btn--small" type="submit">
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span>Salir</span>
+            </button>
+        </form>
+    </div>
+</header>
+</body>
+</html>

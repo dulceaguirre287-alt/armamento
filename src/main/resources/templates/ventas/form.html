@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Nueva venta', 'ventas', ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Comercial</p><h1>Nueva venta</h1>
+            <p class="page-heading__subtitle">El sistema validará permisos, existencias y calculará los importes al guardar.</p></div></header>
+        <form class="panel" th:object="${venta}" th:action="@{/ventas}" method="post" data-totals-form>
+            <div class="alert alert--error" th:if="${#fields.hasGlobalErrors()}" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</span>
+            </div>
+            <div class="field-grid">
+                <div class="field"><label for="clienteId">Cliente</label><select id="clienteId" th:field="*{clienteId}" required>
+                    <option value="">Selecciona un cliente</option>
+                    <option th:each="cliente : ${clientes}" th:value="${cliente.id}" th:text="${cliente.nombreRazon}">Cliente</option>
+                </select><span class="field__error" th:errors="*{clienteId}"></span></div>
+                <div class="field"><label for="almacenId">Almacén</label><select id="almacenId" th:field="*{almacenId}" required>
+                    <option value="">Selecciona un almacén</option>
+                    <option th:each="almacen : ${almacenes}" th:value="${almacen.id}" th:text="${almacen.nombre}">Almacén</option>
+                </select><span class="field__error" th:errors="*{almacenId}"></span></div>
+                <div class="field"><label for="metodoPago">Método de pago</label><select id="metodoPago" th:field="*{metodoPago}" required>
+                    <option value="">Selecciona un método</option><option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia</option><option value="TARJETA">Tarjeta</option><option value="CREDITO">Crédito</option>
+                </select><span class="field__error" th:errors="*{metodoPago}"></span></div>
+                <div class="field"><label for="observaciones">Observaciones</label><textarea id="observaciones" th:field="*{observaciones}" maxlength="1000"></textarea></div>
+            </div>
+            <div class="section-subheading"><div><h2>Productos</h2><p class="muted">Los productos controlados por serie deben agregarse de uno en uno.</p></div>
+                <button class="btn btn--secondary" type="button" data-add-line>Agregar producto</button></div>
+            <div class="line-items" data-lines>
+                <div class="line-item" data-line-item th:each="detalle, stat : *{detalles}">
+                    <div class="field line-item__product"><label th:for="${'venta-producto-' + stat.index}">Producto</label>
+                        <select th:id="${'venta-producto-' + stat.index}" th:field="*{detalles[__${stat.index}__].productoId}" data-line-product required>
+                            <option value="" data-price="0" data-tax="0">Selecciona producto</option>
+                            <option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.sku + ' · ' + producto.nombre}"
+                                    th:attr="data-price=${producto.precioVenta},data-tax=${producto.porcentajeIva}">Producto</option>
+                        </select><span class="field__error" th:errors="*{detalles[__${stat.index}__].productoId}"></span></div>
+                    <div class="field"><label th:for="${'venta-cantidad-' + stat.index}">Cantidad</label>
+                        <input th:id="${'venta-cantidad-' + stat.index}" type="number" min="1" data-line-quantity
+                               th:field="*{detalles[__${stat.index}__].cantidad}" required>
+                        <span class="field__error" th:errors="*{detalles[__${stat.index}__].cantidad}"></span></div>
+                    <div class="field"><label th:for="${'venta-lote-' + stat.index}">Lote (si aplica)</label>
+                        <input th:id="${'venta-lote-' + stat.index}" maxlength="80" th:field="*{detalles[__${stat.index}__].lote}"></div>
+                    <input type="hidden" data-line-price value="0"><input type="hidden" data-line-tax value="0">
+                    <button class="btn btn--small btn--danger" type="button" data-remove-line aria-label="Quitar producto">Quitar</button>
+                </div>
+            </div>
+            <template data-line-template>
+                <div class="line-item" data-line-item>
+                    <div class="field line-item__product"><label>Producto</label><select data-name="detalles[__index__].productoId" data-line-product required>
+                        <option value="" data-price="0" data-tax="0">Selecciona producto</option>
+                        <option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.sku + ' · ' + producto.nombre}"
+                                th:attr="data-price=${producto.precioVenta},data-tax=${producto.porcentajeIva}">Producto</option>
+                    </select></div>
+                    <div class="field"><label>Cantidad</label><input type="number" min="1" value="1" data-name="detalles[__index__].cantidad" data-line-quantity required></div>
+                    <div class="field"><label>Lote (si aplica)</label><input maxlength="80" data-name="detalles[__index__].lote"></div>
+                    <input type="hidden" data-line-price value="0"><input type="hidden" data-line-tax value="0">
+                    <button class="btn btn--small btn--danger" type="button" data-remove-line>Quitar</button>
+                </div>
+            </template>
+            <span class="field__error" th:errors="*{detalles}"></span>
+            <div class="totals" aria-live="polite">
+                <div class="totals__row"><span>Subtotal estimado</span><strong data-total-subtotal>$ 0</strong></div>
+                <div class="totals__row"><span>IVA estimado</span><strong data-total-tax>$ 0</strong></div>
+                <div class="totals__row totals__row--grand"><span>Total estimado</span><strong data-total-grand>$ 0</strong></div>
+            </div>
+            <div class="form-actions"><a class="btn btn--secondary" th:href="@{/ventas}">Cancelar</a>
+                <button class="btn btn--primary" type="submit">Registrar venta</button></div>
+        </form>
+        <script th:src="@{/js/totales.js}" defer></script>
+    </section>
+</th:block>
+</body>
+</html>

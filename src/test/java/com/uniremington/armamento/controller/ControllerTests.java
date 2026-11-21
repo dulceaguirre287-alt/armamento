@@ -13,21 +13,25 @@ import com.uniremington.armamento.model.dao.ProductoProveedorDao;
 import com.uniremington.armamento.model.dao.UsuarioDao;
 import com.uniremington.armamento.model.vo.ProductoVO;
 import com.uniremington.armamento.model.vo.UsuarioVO;
+import com.uniremington.armamento.TestSecurityConfig;
 import com.uniremington.armamento.controller.res.ResController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestSecurityConfig.class)
 @Transactional
 class ControllerTests {
     @Autowired
@@ -35,6 +39,9 @@ class ControllerTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private ProductoDao productoDao;
@@ -110,6 +117,20 @@ class ControllerTests {
     }
 
     @Test
+    void genericApiRejectsWritesToServiceManagedInventoryResources() throws Exception {
+        mockMvc.perform(post("/api/ventas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isMethodNotAllowed());
+        mockMvc.perform(put("/api/existencias/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isMethodNotAllowed());
+        mockMvc.perform(delete("/api/unidades-seriadas/1"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
     void compositeKeyResourceSupportsCreateAndRead() throws Exception {
         String association = """
                 {
@@ -163,7 +184,17 @@ class ControllerTests {
         org.junit.jupiter.api.Assertions.assertTrue(resController.resourceNames().contains("productos"));
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/mvc/productos")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/productos")));
+    }
+
+    @Test
+    void administrativeScreensRenderWithThymeleaf() throws Exception {
+        for (String path : new String[] {
+                "/login", "/productos", "/productos/nuevo", "/ventas", "/ventas/nueva",
+                "/compras", "/compras/nueva", "/devoluciones", "/devoluciones/nueva",
+                "/usuarios", "/usuarios/nuevo", "/mvc/almacenes", "/mvc/almacenes/nuevo"}) {
+            mockMvc.perform(get(path)).andExpect(status().isOk());
+        }
     }
 
     @Test
@@ -276,7 +307,8 @@ class ControllerTests {
                 .andExpect(status().is3xxRedirection());
 
         UsuarioVO updated = usuarioDao.findById(created.idUsuario()).orElseThrow();
-        org.junit.jupiter.api.Assertions.assertEquals("precomputed-hash", updated.passwordHash());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                passwordEncoder.matches("precomputed-hash", updated.passwordHash()));
         org.junit.jupiter.api.Assertions.assertFalse(updated.activo());
     }
 }

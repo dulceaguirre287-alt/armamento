@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Ventas', 'ventas', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Comercial</p><h1>Ventas</h1>
+            <p class="page-heading__subtitle" th:text="${ventas.totalElements} + ' transacciones registradas'">Ventas</p></div>
+            <a class="btn btn--primary" sec:authorize="hasAnyRole('ADMINISTRADOR','VENDEDOR')" th:href="@{/ventas/nueva}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar venta</a>
+        </header>
+        <section class="panel panel--flush">
+            <div class="toolbar"><form class="search-form" method="get" th:action="@{/ventas}" role="search">
+                <label class="sr-only" for="venta-search">Buscar venta</label>
+                <input id="venta-search" name="q" type="search" th:value="${q}" placeholder="Buscar por número de venta">
+                <button class="btn btn--secondary" type="submit">Buscar</button>
+            </form></div>
+            <div class="table-wrap" th:if="${ventas.hasContent()}">
+                <table class="data-table">
+                    <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Almacén</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+                    <tbody><tr th:each="venta : ${ventas.content}">
+                        <td><a th:href="@{/ventas/{id}(id=${venta.id})}" th:text="${venta.numeroVenta}">VTA</a></td>
+                        <td th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                        <td th:text="${venta.clienteNombre}">Cliente</td><td th:text="${venta.almacenNombre}">Almacén</td>
+                        <td th:text="'$ ' + ${#numbers.formatDecimal(venta.total, 1, 'POINT', 2, 'COMMA')}">$ 0,00</td>
+                        <td><span class="badge" th:classappend="${venta.estado == 'ANULADA'} ? ' badge--danger' : ' badge--success'" th:text="${venta.estado}">Estado</span></td>
+                        <td><a class="btn btn--small btn--secondary" th:href="@{/ventas/{id}(id=${venta.id})}">Ver detalle</a></td>
+                    </tr></tbody>
+                </table>
+            </div>
+            <div class="empty-state" th:unless="${ventas.hasContent()}"><i class="fa-solid fa-receipt" aria-hidden="true"></i>
+                <h2>Sin ventas registradas</h2><p>Cuando registres una venta, aparecerá aquí.</p></div>
+            <div th:replace="~{fragments/pagination :: pagination(${ventas}, '/ventas', ${q})}"></div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

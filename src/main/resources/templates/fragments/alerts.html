@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="alerts">
+    <div class="alert alert--success" th:if="${success != null or exito != null}" role="status">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <span th:text="${exito != null ? exito : success}">Operación completada.</span>
+    </div>
+    <div class="alert alert--error" th:if="${error != null}" role="alert">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span th:text="${error}">Ocurrió un error.</span>
+    </div>
+</div>
+</body>
+</html>

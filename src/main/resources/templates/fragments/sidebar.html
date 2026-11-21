@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+    <a class="sidebar__brand" th:href="@{/}">
+        <img th:src="@{/img/armamento-mark.svg}" alt="">
+        <span>Gestión de armamento</span>
+    </a>
+    <nav class="sidebar__nav" aria-label="Navegación principal">
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Panel</span>
+            <a class="sidebar__link" th:classappend="${active == 'inicio'} ? ' sidebar__link--active'"
+               th:href="@{/}" th:aria-current="${active == 'inicio'} ? 'page' : null">
+                <i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>Dashboard</span>
+            </a>
+        </div>
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Inventario</span>
+            <a class="sidebar__link" th:classappend="${active == 'almacenes'} ? ' sidebar__link--active'" th:href="@{/mvc/almacenes}">
+                <i class="fa-solid fa-warehouse" aria-hidden="true"></i><span>Almacenes</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'existencias'} ? ' sidebar__link--active'" th:href="@{/mvc/existencias}">
+                <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><span>Existencias</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'movimientos-inventario'} ? ' sidebar__link--active'" th:href="@{/mvc/movimientos-inventario}">
+                <i class="fa-solid fa-right-left" aria-hidden="true"></i><span>Movimientos inventario</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'unidades-seriadas'} ? ' sidebar__link--active'" th:href="@{/mvc/unidades-seriadas}">
+                <i class="fa-solid fa-barcode" aria-hidden="true"></i><span>Unidades seriadas</span>
+            </a>
+        </div>
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Catálogo</span>
+            <a class="sidebar__link" th:classappend="${active == 'productos'} ? ' sidebar__link--active'" th:href="@{/productos}">
+                <i class="fa-solid fa-box" aria-hidden="true"></i><span>Productos</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'categorias'} ? ' sidebar__link--active'" th:href="@{/mvc/categorias}">
+                <i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Categorías</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'marcas'} ? ' sidebar__link--active'" th:href="@{/mvc/marcas}">
+                <i class="fa-solid fa-tag" aria-hidden="true"></i><span>Marcas</span>
+            </a>
+        </div>
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Comercial</span>
+            <a class="sidebar__link" th:classappend="${active == 'clientes'} ? ' sidebar__link--active'" th:href="@{/mvc/clientes}">
+                <i class="fa-solid fa-user-group" aria-hidden="true"></i><span>Clientes</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'permisos-cliente'} ? ' sidebar__link--active'" th:href="@{/mvc/permisos-cliente}">
+                <i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Permisos cliente</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'ventas'} ? ' sidebar__link--active'" th:href="@{/ventas}">
+                <i class="fa-solid fa-cash-register" aria-hidden="true"></i><span>Ventas</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'detalles-venta'} ? ' sidebar__link--active'" th:href="@{/mvc/detalles-venta}">
+                <i class="fa-solid fa-receipt" aria-hidden="true"></i><span>Detalles venta</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'devoluciones'} ? ' sidebar__link--active'" th:href="@{/devoluciones}">
+                <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i><span>Devoluciones</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'detalles-devolucion'} ? ' sidebar__link--active'" th:href="@{/mvc/detalles-devolucion}">
+                <i class="fa-solid fa-list" aria-hidden="true"></i><span>Detalles devolución</span>
+            </a>
+        </div>
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Abastecimiento</span>
+            <a class="sidebar__link" th:classappend="${active == 'proveedores'} ? ' sidebar__link--active'" th:href="@{/mvc/proveedores}">
+                <i class="fa-solid fa-truck" aria-hidden="true"></i><span>Proveedores</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'productos-proveedor'} ? ' sidebar__link--active'" th:href="@{/mvc/productos-proveedor}">
+                <i class="fa-solid fa-link" aria-hidden="true"></i><span>Productos proveedor</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'compras'} ? ' sidebar__link--active'" th:href="@{/compras}">
+                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><span>Compras</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'detalles-compra'} ? ' sidebar__link--active'" th:href="@{/mvc/detalles-compra}">
+                <i class="fa-solid fa-list-check" aria-hidden="true"></i><span>Detalles compra</span>
+            </a>
+        </div>
+        <div class="sidebar__group">
+            <span class="sidebar__group-title">Seguridad y control</span>
+            <a class="sidebar__link" th:classappend="${active == 'usuarios'} ? ' sidebar__link--active'"
+               sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/usuarios}">
+                <i class="fa-solid fa-users-gear" aria-hidden="true"></i><span>Usuarios</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'roles'} ? ' sidebar__link--active'"
+               sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/mvc/roles}">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Roles</span>
+            </a>
+            <a class="sidebar__link" th:classappend="${active == 'auditorias'} ? ' sidebar__link--active'"
+               sec:authorize="hasAnyRole('ADMINISTRADOR','AUDITOR')" th:href="@{/mvc/auditorias}">
+                <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i><span>Auditorías</span>
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar__footer">Control responsable · Colombia</div>
+</aside>
+</body>
+</html>

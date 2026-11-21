@@ -1,37 +1,138 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Armamento | Inicio</title>
-    <link rel="stylesheet" th:href="@{/styles.css}">
-</head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<header class="topbar">
-    <a class="brand" th:href="@{/}">Armamento</a>
-    <span>Administración de inventario</span>
-</header>
-<main class="container">
-    <section class="hero">
-        <p class="eyebrow">Panel de administración</p>
-        <h1>Gestión de armamento</h1>
-        <p>Consulta y administra la información del sistema.</p>
-    </section>
-    <section>
-        <div class="section-heading">
+<th:block th:replace="~{fragments/layout :: shell('Dashboard', 'inicio', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading">
             <div>
-                <p class="eyebrow">Módulos</p>
-                <h2>Datos del sistema</h2>
+                <p class="eyebrow">Panel de administración</p>
+                <h1>Gestión de armamento</h1>
+                <p class="page-heading__subtitle">Inventario, ventas y abastecimiento en un solo lugar.</p>
             </div>
-        </div>
-        <nav class="resource-grid" aria-label="Módulos disponibles">
-            <a class="resource-card" th:each="resource : ${resources}"
-               th:href="@{/mvc/{name}(name=${resource})}">
-                <span class="resource-card__name" th:text="${#strings.capitalize(#strings.replace(resource, '-', ' '))}">Recurso</span>
-                <span class="resource-card__action">Abrir módulo <span aria-hidden="true">→</span></span>
-            </a>
-        </nav>
+            <span class="badge badge--success"><i class="fa-solid fa-circle" aria-hidden="true"></i> Sistema operativo</span>
+        </header>
+
+        <section class="stat-grid" aria-label="Indicadores del mes">
+            <article class="stat-card">
+                <div>
+                    <p class="stat-card__label">Ventas del mes</p>
+                    <p class="stat-card__value"
+                       th:text="'$ ' + ${#numbers.formatDecimal(dashboard.ventasDelMes, 1, 'POINT', 0, 'COMMA')}">$ 0</p>
+                </div>
+                <span class="stat-card__icon"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i></span>
+            </article>
+            <article class="stat-card">
+                <div>
+                    <p class="stat-card__label">Compras del mes</p>
+                    <p class="stat-card__value"
+                       th:text="'$ ' + ${#numbers.formatDecimal(dashboard.comprasDelMes, 1, 'POINT', 0, 'COMMA')}">$ 0</p>
+                </div>
+                <span class="stat-card__icon"><i class="fa-solid fa-cart-flatbed" aria-hidden="true"></i></span>
+            </article>
+            <article class="stat-card">
+                <div>
+                    <p class="stat-card__label">Existencias totales</p>
+                    <p class="stat-card__value" th:text="${#numbers.formatInteger(dashboard.existenciasTotales, 1, 'POINT')}">0</p>
+                </div>
+                <span class="stat-card__icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></span>
+            </article>
+            <article class="stat-card">
+                <div>
+                    <p class="stat-card__label">Devoluciones aprobadas</p>
+                    <p class="stat-card__value" th:text="${#numbers.formatInteger(dashboard.devolucionesDelMes, 1, 'POINT')}">0</p>
+                </div>
+                <span class="stat-card__icon"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i></span>
+            </article>
+        </section>
+
+        <section class="dashboard-grid" aria-label="Gráficas de gestión">
+            <article class="chart-card">
+                <h2 class="chart-card__title">Ventas por mes</h2>
+                <div class="chart-card__canvas"><canvas id="ventasChart" aria-label="Ventas por mes" role="img"></canvas></div>
+            </article>
+            <article class="chart-card">
+                <h2 class="chart-card__title">Productos más vendidos</h2>
+                <div class="chart-card__canvas"><canvas id="productosChart" aria-label="Productos más vendidos" role="img"></canvas></div>
+            </article>
+            <article class="chart-card">
+                <h2 class="chart-card__title">Existencias por almacén</h2>
+                <div class="chart-card__canvas"><canvas id="almacenesChart" aria-label="Existencias por almacén" role="img"></canvas></div>
+            </article>
+            <article class="chart-card">
+                <h2 class="chart-card__title">Últimos movimientos</h2>
+                <div class="table-wrap" th:if="${!dashboard.ultimosMovimientos.isEmpty()}">
+                    <table class="data-table">
+                        <thead>
+                        <tr><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Fecha</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="movimiento : ${dashboard.ultimosMovimientos}">
+                            <td th:text="${movimiento.producto}">Producto</td>
+                            <td th:text="${#strings.replace(movimiento.tipo, '_', ' ')}">Movimiento</td>
+                            <td th:text="${movimiento.cantidad}">0</td>
+                            <td th:text="${#temporals.format(movimiento.fecha, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" th:if="${dashboard.ultimosMovimientos.isEmpty()}">
+                    <p>No hay movimientos registrados todavía.</p>
+                </div>
+            </article>
+        </section>
+
+        <section th:each="group : ${moduleGroups}" class="module-section">
+            <div class="module-section__title">
+                <h2 th:text="${group.title}">Módulos</h2>
+                <span class="badge" th:text="${#lists.size(group.cards)} + ' módulos'">0 módulos</span>
+            </div>
+            <div class="module-grid">
+                <a class="module-card" th:each="module : ${group.cards}"
+                   th:if="${module.resource != 'usuarios' and module.resource != 'roles' and module.resource != 'auditorias'}"
+                   th:classappend="${' module-card--' + module.color}"
+                   th:href="${module.href}"
+                   >
+                    <span class="module-card__icon"><i class="fa-solid" th:classappend="${' ' + module.icon}" aria-hidden="true"></i></span>
+                    <span>
+                        <strong class="module-card__title" th:text="${module.title}">Módulo</strong>
+                        <span class="module-card__count" th:text="${#numbers.formatInteger(module.count, 1, 'POINT')} + ' registros'">0 registros</span>
+                    </span>
+                </a>
+                <a class="module-card" th:each="module : ${group.cards}"
+                   th:if="${module.resource == 'usuarios' or module.resource == 'roles'}"
+                   sec:authorize="hasRole('ADMINISTRADOR')"
+                   th:classappend="${' module-card--' + module.color}"
+                   th:href="${module.href}">
+                    <span class="module-card__icon"><i class="fa-solid" th:classappend="${' ' + module.icon}" aria-hidden="true"></i></span>
+                    <span><strong class="module-card__title" th:text="${module.title}">Módulo</strong>
+                        <span class="module-card__count" th:text="${#numbers.formatInteger(module.count, 1, 'POINT')} + ' registros'">0 registros</span></span>
+                </a>
+                <a class="module-card" th:each="module : ${group.cards}"
+                   th:if="${module.resource == 'auditorias'}"
+                   sec:authorize="hasAnyRole('ADMINISTRADOR','AUDITOR')"
+                   th:classappend="${' module-card--' + module.color}"
+                   th:href="${module.href}">
+                    <span class="module-card__icon"><i class="fa-solid" th:classappend="${' ' + module.icon}" aria-hidden="true"></i></span>
+                    <span><strong class="module-card__title" th:text="${module.title}">Módulo</strong>
+                        <span class="module-card__count" th:text="${#numbers.formatInteger(module.count, 1, 'POINT')} + ' registros'">0 registros</span></span>
+                </a>
+            </div>
+        </section>
+
+        <script th:inline="javascript">
+            window.armamentoDashboard = {
+                months: [[${dashboard.meses}]],
+                sales: [[${dashboard.ventasPorMes}]],
+                products: [[${dashboard.productosMasVendidos}]],
+                productQuantities: [[${dashboard.cantidadesMasVendidas}]],
+                warehouses: [[${dashboard.almacenes}]],
+                warehouseStock: [[${dashboard.existenciasPorAlmacen}]]
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+        <script th:src="@{/js/dashboard.js}" defer></script>
     </section>
-</main>
+</th:block>
 </body>
 </html>

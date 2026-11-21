@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Usuarios', 'usuarios', ~{::content})}">
+    <section th:fragment="content">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <header class="page-heading"><div><p class="eyebrow">Seguridad y control</p><h1>Usuarios</h1>
+            <p class="page-heading__subtitle" th:text="${usuarios.totalElements} + ' cuentas registradas'">Usuarios</p></div>
+            <a class="btn btn--primary" th:href="@{/usuarios/nuevo}"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Nuevo usuario</a></header>
+        <section class="panel panel--flush">
+            <div class="toolbar"><form class="search-form" method="get" th:action="@{/usuarios}" role="search">
+                <label class="sr-only" for="usuario-search">Buscar usuario</label><input id="usuario-search" name="q" type="search" th:value="${q}" placeholder="Buscar por nombre, usuario o correo">
+                <button class="btn btn--secondary" type="submit">Buscar</button></form></div>
+            <div class="table-wrap" th:if="${usuarios.hasContent()}"><table class="data-table"><thead><tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody><tr th:each="usuario : ${usuarios.content}">
+                    <td th:text="${usuario.nombres + ' ' + usuario.apellidos}">Nombre</td><td th:text="${usuario.username}">usuario</td>
+                    <td th:text="${usuario.email}">correo</td><td th:text="${usuario.rolNombre}">Rol</td>
+                    <td><span class="badge" th:classappend="${usuario.activo} ? ' badge--success' : ' badge--danger'" th:text="${usuario.activo} ? 'Activo' : 'Inactivo'">Activo</span></td>
+                    <td class="table-actions"><a class="btn btn--small btn--secondary" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
+                        <form th:if="${usuario.activo}" th:action="@{/usuarios/{id}/desactivar(id=${usuario.id})}" method="post" data-confirm="¿Desactivar esta cuenta?">
+                            <button class="btn btn--small btn--danger" type="submit">Desactivar</button></form></td>
+                </tr></tbody></table></div>
+            <div class="empty-state" th:unless="${usuarios.hasContent()}"><i class="fa-solid fa-users" aria-hidden="true"></i><h2>Sin usuarios</h2><p>No se encontraron cuentas.</p></div>
+            <div th:replace="~{fragments/pagination :: pagination(${usuarios}, '/usuarios', ${q})}"></div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

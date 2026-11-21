@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="pagination" aria-label="Paginación" th:fragment="pagination(page, path, query)">
+    <span class="muted"
+          th:text="'Página ' + (${page.totalPages == 0 ? 0 : page.number + 1}) + ' de ' + ${page.totalPages}">Página</span>
+    <div class="pagination__links">
+        <a class="pagination__link" th:if="${page.hasPrevious()}"
+           th:href="@{${path}(page=${page.number - 1},q=${query})}" aria-label="Página anterior">‹</a>
+        <a class="pagination__link pagination__link--active"
+           th:text="${page.number + 1}" th:href="@{${path}(page=${page.number},q=${query})}">1</a>
+        <a class="pagination__link" th:if="${page.hasNext()}"
+           th:href="@{${path}(page=${page.number + 1},q=${query})}" aria-label="Página siguiente">›</a>
+    </div>
+</nav>
+</body>
+</html>

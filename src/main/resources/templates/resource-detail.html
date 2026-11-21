@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell(${ 'Detalle de ' + title}, ${resource}, ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Administración</p>        <h1 th:text="${'Detalle de ' + title}">Detalle</h1></div>
+            <div class="table-actions"><a class="btn btn--secondary" th:href="@{/mvc/{resource}(resource=${resource})}">Volver</a>
+                <a class="btn btn--primary" th:href="@{/mvc/{resource}/{id}/editar(resource=${resource},id=${id})}">Editar</a></div></header>
+        <section class="panel detail-grid">
+            <div class="detail-item" th:each="field : ${fields}">
+                <span class="detail-item__label" th:text="${field.label}">Campo</span>
+                <span class="detail-item__value" th:text="${values[field.name] ?: '—'}">Valor</span>
+            </div>
+        </section>
+    </section>
+</th:block>
+</body>
+</html>

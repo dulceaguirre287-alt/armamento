@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer class="content__footer" th:fragment="footer">
+    Sistema interno de inventario y trazabilidad · <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span>
+</footer>
+</body>
+</html>

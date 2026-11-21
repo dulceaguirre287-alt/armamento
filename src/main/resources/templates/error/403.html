@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Acceso denegado', 'inicio', ~{::content})}">
+    <section class="empty-state" th:fragment="content">
+        <i class="fa-solid fa-lock" aria-hidden="true"></i><p class="eyebrow">Error 403</p>
+        <h1>Acceso denegado</h1><p>No tienes permisos para consultar esta sección.</p>
+        <a class="btn btn--primary" th:href="@{/}">Volver al inicio</a>
+    </section>
+</th:block>
+</body>
+</html>

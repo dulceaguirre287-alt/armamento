@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell(${titulo}, 'productos', ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Catálogo</p><h1 th:text="${titulo}">Producto</h1>
+            <p class="page-heading__subtitle">Completa la información comercial y de control del producto.</p></div>
+        </header>
+        <form class="panel" th:object="${producto}"
+              th:action="${producto.id == null ? '/productos' : '/productos/' + producto.id}" method="post">
+            <div class="alert alert--error" th:if="${#fields.hasGlobalErrors()}" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</span>
+            </div>
+            <div class="field-grid">
+                <div class="field"><label for="sku">SKU</label><input id="sku" th:field="*{sku}" required maxlength="80">
+                    <span class="field__error" th:errors="*{sku}"></span></div>
+                <div class="field"><label for="nombre">Nombre</label><input id="nombre" th:field="*{nombre}" required maxlength="180">
+                    <span class="field__error" th:errors="*{nombre}"></span></div>
+                <div class="field"><label for="categoriaId">Categoría</label>
+                    <select id="categoriaId" th:field="*{categoriaId}" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}">Categoría</option>
+                    </select><span class="field__error" th:errors="*{categoriaId}"></span></div>
+                <div class="field"><label for="marcaId">Marca</label>
+                    <select id="marcaId" th:field="*{marcaId}">
+                        <option value="">Sin marca</option>
+                        <option th:each="marca : ${marcas}" th:value="${marca.id}" th:text="${marca.nombre}">Marca</option>
+                    </select><span class="field__error" th:errors="*{marcaId}"></span></div>
+                <div class="field"><label for="modelo">Modelo</label><input id="modelo" th:field="*{modelo}" maxlength="100"></div>
+                <div class="field"><label for="calibre">Calibre</label><input id="calibre" th:field="*{calibre}" maxlength="50"></div>
+                <div class="field"><label for="unidadMedida">Unidad de medida</label><input id="unidadMedida" th:field="*{unidadMedida}" required maxlength="30">
+                    <span class="field__error" th:errors="*{unidadMedida}"></span></div>
+                <div class="field"><label for="stockMinimo">Stock mínimo</label><input id="stockMinimo" type="number" min="0" th:field="*{stockMinimo}"></div>
+                <div class="field"><label for="precioCompraRef">Precio de compra de referencia</label><input id="precioCompraRef" type="number" min="0" step="0.01" th:field="*{precioCompraRef}">
+                    <span class="field__error" th:errors="*{precioCompraRef}"></span></div>
+                <div class="field"><label for="precioVenta">Precio de venta</label><input id="precioVenta" type="number" min="0" step="0.01" th:field="*{precioVenta}">
+                    <span class="field__error" th:errors="*{precioVenta}"></span></div>
+                <div class="field"><label for="porcentajeIva">IVA (%)</label><input id="porcentajeIva" type="number" min="0" max="100" step="0.01" th:field="*{porcentajeIva}">
+                    <span class="field__error" th:errors="*{porcentajeIva}"></span></div>
+                <div class="field field--wide"><label for="descripcion">Descripción</label><textarea id="descripcion" th:field="*{descripcion}" maxlength="1000"></textarea>
+                    <span class="field__error" th:errors="*{descripcion}"></span></div>
+                <label class="check-field"><input type="checkbox" th:field="*{controlaSerial}"> Controla unidades seriadas</label>
+                <label class="check-field"><input type="checkbox" th:field="*{controlaLote}"> Controla lotes</label>
+                <label class="check-field"><input type="checkbox" th:field="*{activo}"> Producto activo</label>
+            </div>
+            <div class="form-actions">
+                <a class="btn btn--secondary" th:href="@{/productos}">Cancelar</a>
+                <button class="btn btn--primary" type="submit">Guardar producto</button>
+            </div>
+        </form>
+    </section>
+</th:block>
+</body>
+</html>

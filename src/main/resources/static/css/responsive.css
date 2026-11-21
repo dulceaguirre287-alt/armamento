@@ -1,0 +1,41 @@
+@media (max-width: 48rem) {
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .search-form {
+        width: 100%;
+    }
+
+    .pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .section-subheading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .line-item--purchase,
+    .line-item--return {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

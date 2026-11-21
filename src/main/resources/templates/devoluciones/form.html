@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Nueva devolución', 'devoluciones', ~{::content})}">
+    <section th:fragment="content">
+        <header class="page-heading"><div><p class="eyebrow">Comercial</p><h1>Nueva devolución</h1>
+            <p class="page-heading__subtitle">La solicitud queda pendiente hasta que sea revisada.</p></div></header>
+        <form class="panel" th:object="${devolucion}" th:action="@{/devoluciones}" method="post">
+            <div class="alert alert--error" th:if="${#fields.hasGlobalErrors()}" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</span></div>
+            <div class="field-grid">
+                <div class="field"><label for="tipo">Tipo de devolución</label><select id="tipo" th:field="*{tipo}" required>
+                    <option value="">Selecciona el origen</option><option value="VENTA">De una venta</option><option value="COMPRA">A un proveedor (compra)</option>
+                </select><span class="field__error" th:errors="*{tipo}"></span></div>
+                <div class="field" data-sale-origin><label for="ventaId">Venta de origen</label><select id="ventaId" th:field="*{ventaId}">
+                    <option value="">Selecciona la venta</option><option th:each="venta : ${ventas}" th:value="${venta.id}" th:text="${venta.numeroVenta + ' · ' + venta.cliente.nombreRazon}">Venta</option>
+                </select></div>
+                <div class="field" data-purchase-origin><label for="compraId">Compra de origen</label><select id="compraId" th:field="*{compraId}">
+                    <option value="">Selecciona la compra</option><option th:each="compra : ${compras}" th:value="${compra.id}" th:text="${compra.numeroCompra + ' · ' + compra.proveedor.razonSocial}">Compra</option>
+                </select></div>
+                <div class="field"><label for="motivo">Motivo</label><input id="motivo" th:field="*{motivo}" required maxlength="250">
+                    <span class="field__error" th:errors="*{motivo}"></span></div>
+                <div class="field field--wide"><label for="descripcion">Descripción</label><textarea id="descripcion" th:field="*{descripcion}" maxlength="1000"></textarea></div>
+            </div>
+            <div class="section-subheading"><div><h2>Productos devueltos</h2><p class="muted">Usa el SKU, lote y número de serie asociados a la transacción seleccionada.</p></div></div>
+            <div class="line-items">
+                <div class="line-item line-item--return" data-line-item th:each="detalle, stat : *{detalles}">
+                    <div class="field"><label th:for="${'devolucion-producto-' + stat.index}">Producto</label><select th:id="${'devolucion-producto-' + stat.index}" th:field="*{detalles[__${stat.index}__].productoId}" required>
+                        <option value="">Selecciona producto</option><option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.sku + ' · ' + producto.nombre}">Producto</option>
+                    </select><span class="field__error" th:errors="*{detalles[__${stat.index}__].productoId}"></span></div>
+                    <div class="field"><label th:for="${'devolucion-cantidad-' + stat.index}">Cantidad</label><input th:id="${'devolucion-cantidad-' + stat.index}" type="number" min="1" th:field="*{detalles[__${stat.index}__].cantidad}" required></div>
+                    <div class="field"><label th:for="${'devolucion-lote-' + stat.index}">Lote</label><input th:id="${'devolucion-lote-' + stat.index}" maxlength="80" th:field="*{detalles[__${stat.index}__].lote}"></div>
+                    <div class="field"><label th:for="${'devolucion-serie-' + stat.index}">ID unidad seriada</label><input th:id="${'devolucion-serie-' + stat.index}" type="number" min="1" th:field="*{detalles[__${stat.index}__].unidadId}"></div>
+                    <div class="field"><label th:for="${'devolucion-condicion-' + stat.index}">Condición</label><input th:id="${'devolucion-condicion-' + stat.index}" th:field="*{detalles[__${stat.index}__].condicion}" maxlength="60" required>
+                        <span class="field__error" th:errors="*{detalles[__${stat.index}__].condicion}"></span></div>
+                    <label class="check-field"><input type="checkbox" th:field="*{detalles[__${stat.index}__].reingresaStock}"> Reingresar a existencias</label>
+                </div>
+            </div>
+            <span class="field__error" th:errors="*{detalles}"></span>
+            <div class="form-actions"><a class="btn btn--secondary" th:href="@{/devoluciones}">Cancelar</a>
+                <button class="btn btn--primary" type="submit">Enviar solicitud</button></div>
+        </form>
+    </section>
+</th:block>
+</body>
+</html>

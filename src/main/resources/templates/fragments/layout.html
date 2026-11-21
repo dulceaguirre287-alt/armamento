@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="shell(pageTitle, active, bodyContent)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0F2A43">
+    <title th:text="${pageTitle} + ' | Gestión de armamento'">Gestión de armamento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<div class="app-shell" data-app-shell>
+    <aside th:replace="~{fragments/sidebar :: sidebar(${active})}"></aside>
+    <button class="sidebar-backdrop" type="button" aria-label="Cerrar menú" data-sidebar-backdrop></button>
+    <div class="app-main">
+        <header th:replace="~{fragments/navbar :: navbar}"></header>
+        <main class="content" id="contenido">
+            <div th:replace="${bodyContent}"></div>
+        </main>
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+</div>
+<dialog class="modal" id="confirm-modal" aria-labelledby="confirm-title">
+    <h2 id="confirm-title">Confirmar acción</h2>
+    <p>¿Deseas continuar con esta operación?</p>
+    <div class="form-actions">
+        <button class="btn btn--secondary" type="button" data-modal-close>Cancelar</button>
+        <button class="btn btn--danger" type="button" data-modal-close>Entendido</button>
+    </div>
+</dialog>
+<script th:src="@{/js/app.js}" defer></script>
+</body>
+</html>

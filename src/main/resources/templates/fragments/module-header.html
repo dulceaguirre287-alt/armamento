@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="page-heading" th:fragment="header(section, title, subtitle, actionHref, actionLabel)">
+    <div>
+        <p class="eyebrow" th:text="${section}">Administración</p>
+        <h1 th:text="${title}">Módulo</h1>
+        <p class="page-heading__subtitle" th:if="${subtitle != null}" th:text="${subtitle}">Descripción</p>
+    </div>
+    <a class="btn btn--primary" th:if="${actionHref != null}" th:href="${actionHref}">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i><span th:text="${actionLabel}">Crear</span>
+    </a>
+</header>
+</body>
+</html>

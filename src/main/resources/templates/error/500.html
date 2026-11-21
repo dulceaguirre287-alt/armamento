@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:replace="~{fragments/layout :: shell('Error del sistema', 'inicio', ~{::content})}">
+    <section class="empty-state" th:fragment="content">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><p class="eyebrow">Error</p>
+        <h1>No se pudo completar la solicitud</h1><p th:text="${mensaje ?: 'Ocurrió un error inesperado.'}">Ocurrió un error.</p>
+        <a class="btn btn--primary" th:href="@{/}">Volver al inicio</a>
+    </section>
+</th:block>
+</body>
+</html>
